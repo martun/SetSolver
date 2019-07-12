@@ -12,7 +12,7 @@ void FindBlobs(const cv::Mat &binary, std::vector<cv::Rect> &blobs)
 	
 	cv::Mat label_image;
 	binary.convertTo(label_image, CV_32SC1);
-	//imwrite("label_image.jpg", label_image);
+	//// imwrite("label_image.jpg", label_image);
 
 	// Skip values near the very corners of the image.
 	for (int y = 10; y < label_image.rows - 10; y++) {
@@ -27,7 +27,7 @@ void FindBlobs(const cv::Mat &binary, std::vector<cv::Rect> &blobs)
 			// Skip blobs smaller than 2% of the total image.
 			if (rect.width > label_image.cols / 15 && rect.height > label_image.rows / 15) {
 				blobs.push_back(rect);
-				imwrite("label_image.jpg", label_image);
+				// imwrite("label_image.jpg", label_image);
 			}
 			cv::rectangle(label_image, rect, cv::Scalar(0), FILLED, LINE_8);
 		}
@@ -94,7 +94,7 @@ void clear_card_symbol(Mat& card_img) {
 		}
 	}
 
-	imwrite("current_card_part_whole_partially_cleared.jpg", card_img);
+	// imwrite("current_card_part_whole_partially_cleared.jpg", card_img);
 
 	// Now we want to make all completely white pixels to black,
 	// Also delete the edges.
@@ -115,7 +115,7 @@ void clear_card_symbol(Mat& card_img) {
 		}
 	}
 
-	imwrite("current_card_part_cleared.jpg", card_img);
+	// imwrite("current_card_part_cleared.jpg", card_img);
 }
 
 void clear_card(Mat& card_img) {
@@ -149,7 +149,7 @@ void clear_card(Mat& card_img) {
 		}
 	}
 
-	imwrite("current_card_whole_partially_cleared.jpg", card_img);
+	// imwrite("current_card_whole_partially_cleared.jpg", card_img);
 
 	// Now we want to make all completely black pixels to white,
 	// Also delete the edges.
@@ -170,7 +170,7 @@ void clear_card(Mat& card_img) {
 		}
 	}
 
-	imwrite("current_card_whole_cleared.jpg", card_img);
+	// imwrite("current_card_whole_cleared.jpg", card_img);
 	
 	/* // This code removed the dots on the cards, small dirts, but also removed the lines in the partially filled cards.
 	// Invert the image.
@@ -179,7 +179,7 @@ void clear_card(Mat& card_img) {
 		cv::Point(-1, -1), 2);
 	// Invert back.
 	card_img = cv::Scalar(255, 255, 255) - card_img;
-	imwrite("current_card_whole_cleared_opened.jpg", card_img);
+	// imwrite("current_card_whole_cleared_opened.jpg", card_img);
 	*/
 
 	// Now change all white to black.
@@ -260,8 +260,6 @@ void detect_fullness(Card& res, Mat& img) {
 }
 
 void detect_shape(Card& res, Mat& img) {
-	int detection_current_time = clock();
-
 	// Clear corners of the card part, there might be some 
 	// pixels from another card part, because we cut a rectangle.
 	clear_card_symbol(img);
@@ -269,7 +267,7 @@ void detect_shape(Card& res, Mat& img) {
 	Mat img_gray;
 	cv::cvtColor(img, img_gray, cv::COLOR_BGR2GRAY);
 	// Clean the noise.
-	imwrite("Cimg_gray.jpg", img_gray);
+	// imwrite("Cimg_gray.jpg", img_gray);
 	
 	// Blur.
 	blur(img_gray, img_gray, Size(3, 3));
@@ -277,14 +275,14 @@ void detect_shape(Card& res, Mat& img) {
 	// Clear the noise from the first_one.
 	// cv::fastNlMeansDenoising(img_gray, img_gray);
 	
-	imwrite("Cimg_gray_cleaned.jpg", img_gray);
+	// imwrite("Cimg_gray_cleaned.jpg", img_gray);
 	
 	// Sharpen the image.
 	/*Mat filter = (Mat_<int>(3, 3) << -1, -1, -1, 
 		-1, 9, -1, 
 		-1, -1, -1);
 	cv::filter2D(img_gray, img_gray, -1, filter);
-	imwrite("Cimg_gray_cleaned_sharpened.jpg", img_gray);
+	// imwrite("Cimg_gray_cleaned_sharpened.jpg", img_gray);
 	*/
 
 	// Clear the small dots in the image, they sometimes cause problems.
@@ -292,14 +290,12 @@ void detect_shape(Card& res, Mat& img) {
 	// of a diamong, making a round figure.
 	//cv::morphologyEx(img_gray, img_gray, CV_MOP_OPEN, Mat(),
 	//	cv::Point(-1, -1), 2);
-	//imwrite("Cimg_gray_cleaned_2.jpg", img_gray);
+	//// imwrite("Cimg_gray_cleaned_2.jpg", img_gray);
 
 	Mat img_bw;
 	cv::threshold(img_gray, img_bw, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
-	std::cout << "threshold Solving time = " << clock() - detection_current_time << std::endl;
-	detection_current_time = clock();
-
-	imwrite("Cthreshold_OUTPUT.jpg", img_bw);
+	
+	// imwrite("Cthreshold_OUTPUT.jpg", img_bw);
 
 	// Find contours
 	std::vector<std::vector<cv::Point> > contours;
@@ -332,7 +328,7 @@ void detect_shape(Card& res, Mat& img) {
 		Scalar color = Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
 		fillConvexPoly(drawing, &approx[0], approx.size(), color, LINE_8, 0);
 
-		imwrite("Cdrawing.jpg", drawing);
+		// imwrite("Cdrawing.jpg", drawing);
 
 		double area = std::fabs(cv::contourArea(contours[i]));
 		// Skip small objects, must be at least 25% of the whole.
@@ -358,7 +354,7 @@ void detect_shape(Card& res, Mat& img) {
 
 // Determines color, shape and filledness of the shape.
 void determine_type(Card& res, Mat& img) {
-	imwrite("next_card.jpg", img);
+	// imwrite("next_card.jpg", img);
 
 	// BGR average.
 	cv::Vec3d average;
@@ -376,12 +372,10 @@ void determine_type(Card& res, Mat& img) {
 Card detect_card(const Mat& img, cv::Rect area) {
 	Card res;
 	
-	int detection_current_time = clock();
-	
 	Mat card_img = img(area);
-	imwrite("current_card_whole_unclear.jpg", card_img);
+	// imwrite("current_card_whole_unclear.jpg", card_img);
 	clear_card(card_img);
-	imwrite("current_card_whole.jpg", card_img);
+	// imwrite("current_card_whole.jpg", card_img);
 
 	Mat card_img_dilated;
 	cv::dilate(
@@ -391,9 +385,7 @@ Card detect_card(const Mat& img, cv::Rect area) {
 		1, // Just 1 iteration, if 2, some parts start to connect
 		1,
 		1);
-	imwrite("current_card_whole_dialted.jpg", card_img_dilated);
-	std::cout << "Clear and Dilate Solving time = " << clock() - detection_current_time << std::endl;
-	detection_current_time = clock();
+	// imwrite("current_card_whole_dialted.jpg", card_img_dilated);
 	
 	// Find out how many parts are there.
 	std::vector<cv::Rect> blobs;
@@ -402,16 +394,10 @@ Card detect_card(const Mat& img, cv::Rect area) {
 	cv::cvtColor(card_img_dilated, img_gray, cv::COLOR_BGR2GRAY);
 	Mat img_bw;
 	cv::threshold(img_gray, img_bw, 50, 255, CV_THRESH_BINARY);
-	imwrite("current_card_whole_bw.jpg", img_bw);
-	
-	std::cout << "Thresholding Solving time = " << clock() - detection_current_time << std::endl;
-	detection_current_time = clock();
+	// imwrite("current_card_whole_bw.jpg", img_bw);
 	
 	FindBlobs(img_bw, blobs);
 	
-	std::cout << "FindBlobs Solving time = " << clock() - detection_current_time << std::endl;
-	detection_current_time = clock();
-
 	// Probably this is not a card, but some other white object.
 	if (blobs.size() > 3 || blobs.size() == 0)
 	{
@@ -445,9 +431,7 @@ Card detect_card(const Mat& img, cv::Rect area) {
 	
 	// Take the first one, hope it's ok, and try to determine the type.
 	determine_type(res, first_one);
-	std::cout << "Detect type Solving time = " << clock() - detection_current_time << std::endl;
-	detection_current_time = clock();
-
+	
 	return res;
 }
 
@@ -512,15 +496,15 @@ void equalize_histogram(const Mat& img_input, Mat& img_output) {
 
 // Makes all colors very close to white completely white.
 void clean_the_white(const Mat& img_initial, Mat& img_bw) {
-	// equalize_histogram(img_very_initial, img_initial);
-
 	Mat img_gray;
 	cv::cvtColor(img_initial, img_gray, cv::COLOR_BGR2GRAY);
-
+	
 	// Cut the inner 40% of the image, and threshold based on that part only.
 	Mat img_gray_50 = img_gray(cv::Rect(
 		img_gray.cols * 3 / 10, img_gray.rows * 3 / 10,
 		img_gray.cols * 4 / 10, img_gray.rows * 4 / 10));
+
+
 	Mat img_bw_50;
 	double threshold = cv::threshold(
 		img_gray_50, img_bw_50, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
@@ -531,8 +515,8 @@ void clean_the_white(const Mat& img_initial, Mat& img_bw) {
 	// Now use that threshold on the initial image.
 	cv::threshold(img_gray, img_bw, threshold, 255, CV_THRESH_BINARY);
 
-	imwrite("Ximg_gray.jpg", img_gray);
-	imwrite("Ximg_bw.jpg", img_bw);
+	// imwrite("Ximg_gray.jpg", img_gray);
+	// imwrite("Ximg_bw.jpg", img_bw);
 }
 
 void DoAll(Mat& img_initial, Mat& final_result) {
@@ -545,14 +529,12 @@ void DoAll(Mat& img_initial, Mat& final_result) {
 			cv::Size(img_initial.cols / factor, img_initial.rows / factor));
 	}
 	final_result = img_initial.clone();
+	
 	Mat img_bw;
-	int current_time = clock();
 	clean_the_white(img_initial, img_bw);
-	imwrite("XXXXimg_bw.jpg", img_bw);
-	std::cout << "Cleaning time = " << clock() - current_time << std::endl;
-	current_time = clock();
+	// imwrite("XXXXimg_bw.jpg", img_bw);
 	std::vector<cv::Rect> blobs;
-
+	
 	// FindBlobs is very slow, so let's reduce image size by 5x,
 	// find the blobs, and then do x5.
 	Mat small;
@@ -560,6 +542,7 @@ void DoAll(Mat& img_initial, Mat& final_result) {
 	cv::resize(
 		img_bw, small,
 		cv::Size(img_initial.cols / small_factor, img_initial.rows / small_factor));
+
 	FindBlobs(small, blobs);
 	for (int i = 0; i < blobs.size(); ++i) {
 		blobs[i].x *= small_factor;
@@ -567,9 +550,6 @@ void DoAll(Mat& img_initial, Mat& final_result) {
 		blobs[i].width *= small_factor;
 		blobs[i].height *= small_factor;
 	}
-
-	std::cout << "Finding blobs time = " << clock() - current_time << std::endl;
-	current_time = clock();
 
 	Mat img_bw_reversed = cv::Scalar(255) - img_bw;
 
@@ -585,8 +565,6 @@ void DoAll(Mat& img_initial, Mat& final_result) {
 		cards.push_back(next);
 		// cv::rectangle(cut, blobs[i], cv::Scalar(255, 0, 0), 10);
 	}
-	std::cout << "Cards detection time = " << clock() - current_time << std::endl;
-	current_time = clock();
 
 	std::vector<std::vector<int>> card_ids = find_matching_cards(cards);
 
@@ -624,13 +602,11 @@ void DoAll(Mat& img_initial, Mat& final_result) {
 			}
 		}
 	}
-	std::cout << "Solving time = " << clock() - current_time << std::endl;
-	current_time = clock();
 }
 
 int main()
 {
-	Mat img_initial = imread("test_10.jpg");
+	Mat img_initial = imread("test1.jpg");
 	Mat final_result;
 	DoAll(img_initial, final_result);
 	imwrite("FinalResult.jpg", final_result);
